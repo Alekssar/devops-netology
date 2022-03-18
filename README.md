@@ -11,3 +11,5 @@ new line 2 - text input test
 # override.tf, override.tf.json - исключение конкретных файлов,
 # *_override.tf, *_override.tf.json - Исключение всех файлов с указанными расширениями в любом каталоге проекта
 # .terraformrc и terraform.rc - игнорирование конкретных файлов
+
+Новая строчка по новому заданию =))
