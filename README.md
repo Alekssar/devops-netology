@@ -1,4 +1,5 @@
 # devops-netlogynew line1
+#не получается отправка в репозитарий - попытка два
 new line 2 - text input test
 
 
