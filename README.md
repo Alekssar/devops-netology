@@ -12,4 +12,5 @@ new line 2 - text input test
 # *_override.tf, *_override.tf.json - Исключение всех файлов с указанными расширениями в любом каталоге проекта
 # .terraformrc и terraform.rc - игнорирование конкретных файлов
 #правка из графического интерфейса
+#new line pycharm
 
