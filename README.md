@@ -1,3 +1,146 @@
+DZ 3.2
+
+1 
+vagrant@vagrant:~$ type cd
+cd is a shell builtin  --не является самостоятельной программой, а встроеная команда оболочки, служит для перехода по каталогам.
+
+2. 
+команда должна посчитать колличество строк с указанными совпадениями.
+по описанию в man, будет соответствовать 
+   General Output Control
+       -c, --count
+              Suppress normal output; instead print a count of matching lines for each input file.  With the -v, --invert-match option
+              (see below), count non-matching lines.
+т.е. grep <some_string> <some_file> -с - альтернатива
+
+3.
+vagrant@vagrant:~$ pstree -p
+systemd(1)─┬─VBoxService(893)─┬─{VBoxService}(894)
+           │                  ├─{VBoxService}(895)
+           │                  ├─{VBoxService}(896)
+           │                  ├─{VBoxService}(897)
+           │                  ├─{VBoxService}(898)
+           │                  ├─{VBoxService}(899)
+           │                  ├─{VBoxService}(900)
+           │                  └─{VBoxService}(901)
+           ├─accounts-daemon(673)─┬─{accounts-daemon}(729)
+           │                      └─{accounts-daemon}(794)
+           ├─agetty(723)
+           ├─atd(709)
+           ├─cron(705)
+
+ответ systemd является родителем всех проц-в 
+
+-p используется в соответствии с описанием в man pstree
+
+4.
+в первом терминале ввод
+vagrant@vagrant:~$ tty
+/dev/pts/0
+vagrant@vagrant:~$ ls -l \test123 2>/dev/pts/1
+
+вывод второго
+vagrant@vagrant:~$ tty
+/dev/pts/1
+vagrant@vagrant:~$ ls: cannot access 'test123': No such file or directory
+
+5.
+
+vagrant@vagrant:~$ grep -n Finished < /var/log/syslog > 11.file
+
+
+в итоговом файле отфильтровалось 
+
+4:Apr 12 00:00:46 vagrant systemd[1]: Finished Daily man-db regeneration.
+13:Apr 12 01:55:48 vagrant systemd[1]: Finished Refresh fwupd metadata and update motd.
+19:Apr 12 03:34:46 vagrant systemd[1]: Finished Message of the Day.
+24:Apr 12 05:04:06 vagrant systemd[1]: Finished Ubuntu Advantage Timer for running repeated jobs.
+34:Apr 12 08:26:36 vagrant systemd[1]: Finished Cleanup of Temporary Directories.
+41:Apr 12 11:15:46 vagrant systemd[1]: Finished Ubuntu Advantage Timer for running repeated jobs.
+54:Apr 12 14:23:46 vagrant systemd[1]: Finished Refresh fwupd metadata and update motd.
+71:Apr 12 18:06:38 vagrant systemd[1]: Finished Refresh fwupd metadata and update motd.
+74:Apr 12 18:15:46 vagrant systemd[1]: Finished Ubuntu Advantage Timer for running repeated jobs.
+
+6.
+Данные вывести получиться, но для наблюдения выводимых данных надо будет переключиться из графического эмулятора в эмулятор терминала
+
+7.
+
+bash 5>&1 - создаст дискриптор 5 и перенаправит его в stdout
+echo netology > /proc/$$/fd/5   - выводит на экран netology. Происходит так, потому что перенаправили echo netology > 
+в дискриптор 5. Который ранее был перенаправлен в stdout
+
+8.
+
+vagrant@vagrant:~$ ls -l /root 5>&2 2>&1 1>&5 |grep denied -c
+1
+
+5>&2 - новый дескриптор, перенаправили в stderr
+2>&1 - stderr перенаправили в stdout 
+1>&5 - stdout - перенаправили в в новый дескриптор
+
+
+9.
+
+Выводит переменные окружения. Можно заменить командой env (у меня вывело в более читабельном виде именно командой env
+командой из задания вывело сплошным текстом)
+
+10.
+
+/proc/<PID>/cmdline - полный путь до исполняемого файла процесса [PID]  
+/proc/<PID>/exe - содержит ссылку до файла запущенного для процесса [PID]
+
+ в мане не получилось найти данную информацию, нагуглил. Подскажите плз строку запроса для корректного поиска
+
+ 11. 
+vagrant@vagrant:~$ grep sse /proc/cpuinfo
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 cx16 pcid
+sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single pti fsgsbase avx2 invpcid rdseed clflushopt md_clear flush_l1d
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx rdtscp lm constant_tsc rep_good nopl xtopology nonstop_tsc cpuid tsc_known_freq pni pclmulqdq ssse3 cx16 pcid
+sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx rdrand hypervisor lahf_lm abm 3dnowprefetch invpcid_single pti fsgsbase avx2 invpcid rdseed clflushopt md_clear flush_l1d
+
+версия 4_2
+
+12.
+ поправить можно ключем -t
+ vagrant@vagrant:~$ ssh -t localhost 'tty'
+vagrant@localhost's password:
+/dev/pts/2
+ 
+ If an interactive session is requested ssh by default will only request a pseudo-terminal (pty) for interactive
+     sessions when the client has one.  The flags -T and -t can be used to override this behaviour.
+ 
+ 
+ -t      Force pseudo-terminal allocation.  This can be used to execute arbitrary screen-based programs on a re‐
+             mote machine, which can be very useful, e.g. when implementing menu services.  Multiple -t options force
+             tty allocation, even if ssh has no local tty.
+
+Почему не работает не очень ясно, но скорее всего при отправке команды по ssh (без ключа) псевдотерминал не создается.
+
+13.
+reptyr -T <PID>
+получилось... после рекомендованных изменений 
+reptyr depends on the ptrace(2) system call to attach to the  remote  program.  On  Ubuntu
+       Maverick  and  higher,  this  ability is disabled by default for security reasons. You can
+       enable it temporarily by doing
+
+               # echo 0 > /proc/sys/kernel/yama/ptrace_scope
+
+Хотелось бы, что б reptyr был еще раз разобран более подробно 
+
+14.
+tee - одновременно осуществляет вывод и в файл, указаный в качестве 
+параметра и в stdout.
+vagrant@vagrant:~$ echo string | sudo tee /root/new_file
+string
+В данном варианте команда получает вывод из stdin, перенаправленный через pipe от stdout команды echo
+плюс команда запущена под пользователем sudo, у которого есть права на запись в файл 
+
+
+
+
+
+
 DZ3_1
 
 
