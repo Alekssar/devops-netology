@@ -1,3 +1,153 @@
+#DZ 3.3
+
+1.
+
+vagrant@vagrant:~$ touch strace.log
+vagrant@vagrant:~$ strace /bin/bash -c 'cd /tmp' > strace.log 2>&1
+vagrant@vagrant:~$ cat strace.log | grep /tmp
+execve("/bin/bash", ["/bin/bash", "-c", "cd /tmp"], 0x7ffc165b5b00 /* 23 vars */) = 0
+stat("/tmp", {st_mode=S_IFDIR|S_ISVTX|0777, st_size=4096, ...}) = 0
+chdir("/tmp")                           = 0
+vagrant@vagrant:~$
+
+2.
+man FILE 
+
+     /usr/share/misc/magic.mgc  Default compiled list of magic.
+     /usr/share/misc/magic      Directory containing default magic files.
+
+vagrant@vagrant:~$ strace -o dz33.2 file /dev/tty
+/dev/tty: character special (5/0)
+vagrant@vagrant:~$ grep magic dz33.2
+openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libmagic.so.1", O_RDONLY|O_CLOEXEC) = 3
+stat("/home/vagrant/.magic.mgc", 0x7fff3a79f2b0) = -1 ENOENT (No such file or directory)
+stat("/home/vagrant/.magic", 0x7fff3a79f2b0) = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/magic.mgc", O_RDONLY) = -1 ENOENT (No such file or directory)
+stat("/etc/magic", {st_mode=S_IFREG|0644, st_size=111, ...}) = 0
+openat(AT_FDCWD, "/etc/magic", O_RDONLY) = 3
+openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
+vagrant@vagrant:~$
+
+3.
+кинул пинг - логи в файл тест пинг и файл сразу удалил 
+процесс пинг запущен
+vagrant@vagrant:~$ ping ya.ru > test_ping & rm test_ping
+[1] 6929
+vagrant@vagrant:~$ ps
+    PID TTY          TIME CMD
+   6919 pts/0    00:00:00 bash
+   6929 pts/0    00:00:00 ping
+   6934 pts/0    00:00:00 ps
+
+видим, что размер фувеличивается у файла
+vagrant@vagrant:~$ sudo lsof -p 6929
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF    NODE NAME
+ping    6929 vagrant    1w   REG  253,0     5570 1048639 /home/vagrant/test_ping (deleted)
+
+vagrant@vagrant:~$ sudo lsof -p 6929
+COMMAND  PID    USER   FD   TYPE DEVICE SIZE/OFF    NODE NAME
+ping    6929 vagrant    1w   REG  253,0    31885 1048639 /home/vagrant/test_ping (deleted)
+
+
+вариантов наверное несколько - если нам сам процесс не нужен, то можем убить процесс 
+vagrant@vagrant:~$ kill -9 6929
+vagrant@vagrant:~$ sudo lsof | grep deleted
+[1]+  Killed                  ping ya.ru > test_ping
+второй вариан ограничить размер файла нулем 
+sudo truncate -s 0 /proc/6929/fd/1
+
+
+4. 
+Зомби процес освобождает свои ресурсы, но не освобождает запись в таблице процессов.
+
+5.
+
+vagrant@vagrant:~$ dpkg -L bpfcc-tools | grep sbin/opensnoop
+/usr/sbin/opensnoop-bpfcc
+vagrant@vagrant:~$ sudo /usr/sbin/opensnoop-bpfcc
+PID    COMM               FD ERR PATH
+630    irqbalance          6   0 /proc/interrupts
+630    irqbalance          6   0 /proc/stat
+630    irqbalance          6   0 /proc/irq/20/smp_affinity
+630    irqbalance          6   0 /proc/irq/0/smp_affinity
+630    irqbalance          6   0 /proc/irq/1/smp_affinity
+630    irqbalance          6   0 /proc/irq/8/smp_affinity
+630    irqbalance          6   0 /proc/irq/12/smp_affinity
+630    irqbalance          6   0 /proc/irq/14/smp_affinity
+630    irqbalance          6   0 /proc/irq/15/smp_affinity
+917    vminfo              4   0 /var/run/utmp
+621    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+621    dbus-daemon        23   0 /usr/share/dbus-1/system-services
+621    dbus-daemon        -1   2 /lib/dbus-1/system-services
+621    dbus-daemon        23   0 /var/lib/snapd/dbus-1/system-services/
+917    vminfo              4   0 /var/run/utmp
+621    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+621    dbus-daemon        23   0 /usr/share/dbus-1/system-services
+621    dbus-daemon        -1   2 /lib/dbus-1/system-services
+621    dbus-daemon        23   0 /var/lib/snapd/dbus-1/system-services/
+
+
+6.
+
+vagrant@vagrant:~$ strace uname -a > uname_log 2>&1
+vagrant@vagrant:~$ nano uname_log
+vagrant@vagrant:~$ cat uname_log | grep uname
+execve("/usr/bin/uname", ["uname", "-a"], 0x7fff68a30178 /* 24 vars */) = 0
+uname({sysname="Linux", nodename="vagrant", ...}) = 0
+uname({sysname="Linux", nodename="vagrant", ...}) = 0
+uname({sysname="Linux", nodename="vagrant", ...}) = 0
+vagrant@vagrant:~$
+
+
+uname()
+Part of the utsname information is also accessible  via  /proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}
+нашел не в мане, а в интернете. в инете везде идет ссылка именно на man 2 uname
+vagrant@vagrant:~$ man 2 uname
+No manual entry for uname in section 2
+
+7.
+; - Оператор точка с запятой позволяет запускать несколько команд за один раз, и выполнение команды происходит последовательнj
+&& - будет выполнять вторую команду только в том случае, если состояние выхода первой команды равно «0» — программа выполнена успешно.
+set -e - прекращает выполнение если результат отличен от нуля. функционал схож с &&, но в моментах отладки смысл использования похоже есть 
+
+8.
+-e - прекращает выполнение скрипта если команда завершилась ошибкой
+-u - прекращает выполнение скрипта, если встретилась несуществующая переменная
+-x - выводит выполняемые команды в stdout перед выполненинем
+-o pipefail - прекращает выполнение скрипта, даже если одна из частей пайпа завершилась ошибкой
+при использовании в сценариях хорошо тем, что происходит поиск ошибок. Можно назвать наверное встроеной отладкой 
+
+9.
+STAT
+Ss
+R+
+
+PROCESS STATE CODES
+       Here are the different values that the s, stat and state output specifiers (header "STAT" or "S") will display
+       to describe the state of a process:
+
+               D    uninterruptible sleep (usually IO)
+               I    Idle kernel thread
+               R    running or runnable (on run queue)
+               S    interruptible sleep (waiting for an event to complete)
+               T    stopped by job control signal
+               t    stopped by debugger during the tracing
+               W    paging (not valid since the 2.6.xx kernel)
+               X    dead (should never be seen)
+               Z    defunct ("zombie") process, terminated but not reaped by its parent
+
+       For BSD formats and when the stat keyword is used, additional characters may be displayed:
+
+               <    high-priority (not nice to other users)
+               N    low-priority (nice to other users)
+               L    has pages locked into memory (for real-time and custom IO)
+               s    is a session leader
+               l    is multi-threaded (using CLONE_THREAD, like NPTL pthreads do)
+               +    is in the foreground process group
+
+
+
+
 #DZ 3.2
 
 1 
