@@ -1,3 +1,108 @@
+#DZ3.4
+
+1.
+Поставил раза с третьего, после очередного перекуривания мануала 
+помещение в автозапуск 
+vagrant@vagrant:~$ sudo systemctl enable node_exporter
+процесс корректно стартуется и завершается. после перезапуска так же работает 
+
+vagrant@vagrant:~$ Connection to 127.0.0.1 closed by remote host.
+Connection to 127.0.0.1 closed.
+PS D:\netology\vagrant\varconf> vagrant ssh
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-91-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Mon 25 Apr 2022 09:07:32 PM UTC
+
+  System load:  0.95               Processes:             146
+  Usage of /:   12.0% of 30.88GB   Users logged in:       0
+  Memory usage: 5%                 IPv4 address for eth0: 10.0.2.15
+  Swap usage:   0%
+
+
+This system is built by the Bento project by Chef Software
+More information can be found at https://github.com/chef/bento
+Last login: Mon Apr 25 20:30:26 2022 from 10.0.2.2
+vagrant@vagrant:~$ sudo systemctl status node_exporter
+● node_exporter.service - Node Exporter
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+     Active: active (running) since Mon 2022-04-25 21:07:15 UTC; 35s ago
+   Main PID: 681 (node_exporter)
+      Tasks: 5 (limit: 4616)
+     Memory: 14.5M
+     CGroup: /system.slice/node_exporter.service
+             └─681 /usr/local/bin/node_exporter
+
+
+2.
+node_cpu_seconds_total - общая загрузка CPU в секунду в разных режимах.
+go_memstats_alloc_bytes_total - общее кол-во выделенной памяти в байтах
+node_filesystem_avail_bytes - пространство файловой системы, доступное пользователям (не рутовым)
+node_disk_io_time_seconds_total - общее затраченное время на input|output
+node_network_receive_bytes_total - среднесетевой трафик полученый в секунду за [время]
+
+3.
+установил, в конфиге заменил, порты пробросил - релоад сделал
+все работает скрин по ссылке
+https://skr.sh/sDdxkncF9GA?a
+
+4.
+можно  третья строка дает понять что крутится на виртуалбоксе
+[   30.361702] 21:54:07.770024 main     OS Release: 5.4.0-91-generic
+[   30.361728] 21:54:07.770056 main     OS Version: #102-Ubuntu SMP Fri Nov 5 16:31:28 UTC 2021
+[   30.361763] 21:54:07.770081 main     Executable: /opt/VBoxGuestAdditions-6.1.30/sbin/VBoxService
+               21:54:07.770082 main     Process ID: 894
+               21:54:07.770083 main     Package type: LINUX_64BITS_GENERIC
+[   30.362314] 21:54:07.770637 main     6.1.30 r148432 started. Verbose level = 0
+
+5.
+Есть два типа ограничений 
+«Жесткое ограничение» для открытых файлов статически заданное значение, и может быть изменен только «корневым» пользователем Linux;
+«Мягкое ограничение» — это ограничение, которое может изменяться процессами динамически, т. е. во время выполнения, если процессу требуется больше открытых файлов, чем разрешено мягким пределом.
+
+стоит 1048576 - максимальное колличество дискриптеров файлов, которое процесс может выделить.
+vagrant@vagrant:~$ sysctl -n fs.nr_open
+1048576
+vagrant@vagrant:~$ ulimit -a
+open files                      (-n) 1024
+vagrant@vagrant:~$ ulimit -aH
+open files                      (-n) 1048576
+
+6.
+root@vagrant:~# unshare -f --pid --mount-proc /usr/bin/sleep 1h
+^Z
+[1]+  Stopped                 unshare -f --pid --mount-proc /usr/bin/sleep 1h
+
+root@vagrant:~# ps aux | grep sleep
+root        3273  0.0  0.0   5480   592 pts/0    T    05:25   0:00 unshare -f --pid --mount-proc /usr/bin/sleep 1h
+root        3274  0.0  0.0   5476   592 pts/0    S    05:25   0:00 /usr/bin/sleep 1h
+root        3292  0.0  0.0   6432   672 pts/0    S+   05:28   0:00 grep --color=auto sleep
+
+root@vagrant:~# nsenter -t 3274 -p -m
+root@vagrant:/# ps
+    PID TTY          TIME CMD
+      1 pts/0    00:00:00 sleep
+      2 pts/0    00:00:00 bash
+     13 pts/0    00:00:00 ps
+root@vagrant:/#
+
+7.
+:(){ :|:& };:
+https://linux-notes.org/sozdanie-fork-bomb-v-unix-linux/
+так называемая fork-bomb - функция рекурсивно запускает сама себя, занимая ресурсы системы 
+
+помог автоматической стабилизации 
+cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-4.scope
+
+механизм ядра Linux, который ограничивает и изолирует вычислительные ресурсы (процессорные, сетевые, ресурсы памяти, ресурсы ввода-вывода) для групп процессов
+понравилось как описано тут
+https://linux-notes.org/ustanovka-cgroups-v-unix-linux/
+
+
+#---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 #DZ 3.3
 
 1.
