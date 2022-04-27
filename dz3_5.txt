@@ -1,0 +1,329 @@
+1.
+Разряженые файлы - спец. файлы, которые эффективнее спользуют файловую систему.Т.е. незанятое (пустое) место будет задействовано только при необходимости. Пустая информация в виде нолей будет хранится в метаданных файловой системы. Поэтому места будут файлы занимать меньше.
+минусы - может неожиданно разрастись , нельзя скопировать/создать, если его номинальный размер больше доступного объема (или ограничения размеры квотыБ налагаемолй на учетки пользователей)
+
+2.
+Не могут, потому что жесткая ссылка HL (Hard Link) - это зеркальная копия объекта, с наследованием его прав. inode у них будет один и тот же, в inode записываются метаданные, в том числе и права доступа, поэтому нельзя установить разные права и владельца, в отличии от symlink
+
+3.
+PS D:\netology\vagrant\varconf> vagrant destroy
+    default: Are you sure you want to destroy the 'default' VM? [y/N] y
+==> default: Forcing shutdown of VM...
+==> default: Destroying VM and associated drives...
+PS D:\netology\vagrant\varconf>
+
+новая машина создана
+
+4.
+sdb поделил на 2 гига и 511мегабайт
+
+vagrant@vagrant:~$ lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop1                       7:1    0 55.4M  1 loop /snap/core18/2128
+loop2                       7:2    0 70.3M  1 loop /snap/lxd/21029
+loop3                       7:3    0 55.5M  1 loop /snap/core18/2344
+loop4                       7:4    0 44.7M  1 loop /snap/snapd/15534
+loop5                       7:5    0 61.9M  1 loop /snap/core20/1405
+loop6                       7:6    0 67.8M  1 loop /snap/lxd/22753
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0    1G  0 part /boot
+└─sda3                      8:3    0   63G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.5G  0 lvm  /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+└─sdb2                      8:18   0  511M  0 part
+sdc                         8:32   0  2.5G  0 disk
+
+5.
+
+ -d, --dump <dev>                  dump partition table (usable for later input) - пробуем с ключем d
+vagrant@vagrant:~$ sudo sfdisk -d /dev/sdb > tabl_HDD.txt
+vagrant@vagrant:~$ sudo sfdisk /dev/sdc < tabl_HDD.txt
+vagrant@vagrant:~$ lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+loop1                       7:1    0 55.4M  1 loop /snap/core18/2128
+loop2                       7:2    0 70.3M  1 loop /snap/lxd/21029
+loop3                       7:3    0 55.5M  1 loop /snap/core18/2344
+loop4                       7:4    0 44.7M  1 loop /snap/snapd/15534
+loop5                       7:5    0 61.9M  1 loop /snap/core20/1405
+loop6                       7:6    0 67.8M  1 loop /snap/lxd/22753
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0    1G  0 part /boot
+└─sda3                      8:3    0   63G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.5G  0 lvm  /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+└─sdb2                      8:18   0  511M  0 part
+sdc                         8:32   0  2.5G  0 disk
+├─sdc1                      8:33   0    2G  0 part
+└─sdc2                      8:34   0  511M  0 part
+
+6.
+
+vagrant@vagrant:~$ sudo mdadm --create /dev/md0 --level=1 --raid-devices=2 /dev/sdb1 /dev/sdc1
+
+mdadm: array /dev/md0 started.
+vagrant@vagrant:~$ lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+loop1                       7:1    0 55.4M  1 loop  /snap/core18/2128
+loop2                       7:2    0 70.3M  1 loop  /snap/lxd/21029
+loop3                       7:3    0 55.5M  1 loop  /snap/core18/2344
+loop4                       7:4    0 44.7M  1 loop  /snap/snapd/15534
+loop5                       7:5    0 61.9M  1 loop  /snap/core20/1405
+loop6                       7:6    0 67.8M  1 loop  /snap/lxd/22753
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0    1G  0 part  /boot
+└─sda3                      8:3    0   63G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.5G  0 lvm   /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdb2                      8:18   0  511M  0 part
+sdc                         8:32   0  2.5G  0 disk
+├─sdc1                      8:33   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdc2                      8:34   0  511M  0 part
+
+7.
+vagrant@vagrant:~$ sudo mdadm --create /dev/md1 --level=0 --raid-devices=2 /dev/sdb2 /dev/sdc2
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md1 started.
+vagrant@vagrant:~$ lsblk
+NAME                      MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+loop1                       7:1    0 55.4M  1 loop  /snap/core18/2128
+loop2                       7:2    0 70.3M  1 loop  /snap/lxd/21029
+loop3                       7:3    0 55.5M  1 loop  /snap/core18/2344
+loop4                       7:4    0 44.7M  1 loop  /snap/snapd/15534
+loop5                       7:5    0 61.9M  1 loop  /snap/core20/1405
+loop6                       7:6    0 67.8M  1 loop  /snap/lxd/22753
+sda                         8:0    0   64G  0 disk
+├─sda1                      8:1    0    1M  0 part
+├─sda2                      8:2    0    1G  0 part  /boot
+└─sda3                      8:3    0   63G  0 part
+  └─ubuntu--vg-ubuntu--lv 253:0    0 31.5G  0 lvm   /
+sdb                         8:16   0  2.5G  0 disk
+├─sdb1                      8:17   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdb2                      8:18   0  511M  0 part
+  └─md1                     9:1    0 1018M  0 raid0
+sdc                         8:32   0  2.5G  0 disk
+├─sdc1                      8:33   0    2G  0 part
+│ └─md0                     9:0    0    2G  0 raid1
+└─sdc2                      8:34   0  511M  0 part
+  └─md1                     9:1    0 1018M  0 raid0
+vagrant@vagrant:~$
+
+8.
+vagrant@vagrant:~$ sudo pvcreate /dev/md0 /dev/md1
+\  Physical volume "/dev/md0" successfully created.
+  Physical volume "/dev/md1" successfully created.
+
+9.
+vagrant@vagrant:~$ sudo vgcreate vol_group1 /dev/md0 /dev/md1
+Volume group "vol_group1" successfully created
+
+vagrant@vagrant:~$ sudo pvdisplay
+  --- Physical volume ---
+  PV Name               /dev/sda3
+  VG Name               ubuntu-vg
+  PV Size               <63.00 GiB / not usable 0
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              16127
+  Free PE               8063
+  Allocated PE          8064
+  PV UUID               sDUvKe-EtCc-gKuY-ZXTD-1B1d-eh9Q-XldxLf
+
+  --- Physical volume ---
+  PV Name               /dev/md0
+  VG Name               vol_group1
+  PV Size               <2.00 GiB / not usable 0
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              511
+  Free PE               511
+  Allocated PE          0
+  PV UUID               9uT2t3-CSot-PUCi-O5Wf-TKdA-Usnf-xUq6YP
+
+  --- Physical volume ---
+  PV Name               /dev/md1
+  VG Name               vol_group1
+  PV Size               1018.00 MiB / not usable 2.00 MiB
+  Allocatable           yes
+  PE Size               4.00 MiB
+  Total PE              254
+  Free PE               254
+  Allocated PE          0
+  PV UUID               rNqKdB-Iqpo-s3WQ-vvbG-2VLU-Oqeq-n3zEF4
+
+10.
+vagrant@vagrant:~$ sudo lvcreate -L 100M -n logical_vol1 vol_group1 /dev/md1
+  Logical volume "logical_vol1" created.
+vagrant@vagrant:~$ sudo lvdisplay
+  --- Logical volume ---
+  LV Path                /dev/ubuntu-vg/ubuntu-lv
+  LV Name                ubuntu-lv
+  VG Name                ubuntu-vg
+  LV UUID                ftN15m-3lML-YH5x-R5P2-kLCd-kzW3-32dlqO
+  LV Write Access        read/write
+  LV Creation host, time ubuntu-server, 2021-12-19 19:37:44 +0000
+  LV Status              available
+  # open                 1
+  LV Size                31.50 GiB
+  Current LE             8064
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     256
+  Block device           253:0
+
+  --- Logical volume ---
+  LV Path                /dev/vol_group1/logical_vol1
+  LV Name                logical_vol1
+  VG Name                vol_group1
+  LV UUID                kE8Re2-ypEu-4eH8-T7q9-z2UO-iWQW-ypEQ4h
+  LV Write Access        read/write
+  LV Creation host, time vagrant, 2022-04-27 07:17:06 +0000
+  LV Status              available
+  # open                 0
+  LV Size                100.00 MiB
+  Current LE             25
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     4096
+  Block device           253:1
+
+11.
+vagrant@vagrant:~$ sudo mkfs.ext4 /dev/vol_group1/logical_vol1
+mke2fs 1.45.5 (07-Jan-2020)
+Creating filesystem with 25600 4k blocks and 25600 inodes
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+vagrant@vagrant:~$ lsblk -o NAME,PATH,SIZE,FSTYPE
+NAME                          PATH                                 SIZE FSTYPE
+loop1                         /dev/loop1                          55.4M squashfs
+loop2                         /dev/loop2                          70.3M squashfs
+loop3                         /dev/loop3                          55.5M squashfs
+loop4                         /dev/loop4                          44.7M squashfs
+loop5                         /dev/loop5                          61.9M squashfs
+loop6                         /dev/loop6                          67.8M squashfs
+sda                           /dev/sda                              64G
+├─sda1                        /dev/sda1                              1M
+├─sda2                        /dev/sda2                              1G ext4
+└─sda3                        /dev/sda3                             63G LVM2_member
+  └─ubuntu--vg-ubuntu--lv     /dev/mapper/ubuntu--vg-ubuntu--lv   31.5G ext4
+sdb                           /dev/sdb                             2.5G
+├─sdb1                        /dev/sdb1                              2G linux_raid_member
+│ └─md0                       /dev/md0                               2G LVM2_member
+└─sdb2                        /dev/sdb2                            511M linux_raid_member
+  └─md1                       /dev/md1                            1018M LVM2_member
+    └─vol_group1-logical_vol1 /dev/mapper/vol_group1-logical_vol1  100M ext4
+sdc                           /dev/sdc                             2.5G
+├─sdc1                        /dev/sdc1                              2G linux_raid_member
+│ └─md0                       /dev/md0                               2G LVM2_member
+└─sdc2                        /dev/sdc2                            511M linux_raid_member
+  └─md1                       /dev/md1                            1018M LVM2_member
+    └─vol_group1-logical_vol1 /dev/mapper/vol_group1-logical_vol1  100M ext4
+
+12.
+vagrant@vagrant:~$ mkdir /tmp/logical_vol1
+vagrant@vagrant:~$ mount /dev/vol_group1/logical_vol1 /tmp/logical_vol1/
+mount: only root can do that
+vagrant@vagrant:~$ sudo mount /dev/vol_group1/logical_vol1 /tmp/logical_vol1/
+
+13.
+vagrant@vagrant:~$ sudo wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/logical_vol1/test.gz
+--2022-04-27 07:27:03--  https://mirror.yandex.ru/ubuntu/ls-lR.gz
+Resolving mirror.yandex.ru (mirror.yandex.ru)... 213.180.204.183, 2a02:6b8::183
+Connecting to mirror.yandex.ru (mirror.yandex.ru)|213.180.204.183|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 22446130 (21M) [application/octet-stream]
+Saving to: ‘/tmp/logical_vol1/test.gz’
+
+/tmp/logical_vol1/test.gz     100%[=================================================>]  21.41M  2.29MB/s    in 6.5s
+
+2022-04-27 07:27:10 (3.29 MB/s) - ‘/tmp/logical_vol1/test.gz’ saved [22446130/22446130]
+
+14/
+vagrant@vagrant:~$ lsblk
+NAME                          MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
+loop1                           7:1    0 55.4M  1 loop  /snap/core18/2128
+loop2                           7:2    0 70.3M  1 loop  /snap/lxd/21029
+loop3                           7:3    0 55.5M  1 loop  /snap/core18/2344
+loop4                           7:4    0 44.7M  1 loop  /snap/snapd/15534
+loop5                           7:5    0 61.9M  1 loop  /snap/core20/1405
+loop6                           7:6    0 67.8M  1 loop  /snap/lxd/22753
+sda                             8:0    0   64G  0 disk
+├─sda1                          8:1    0    1M  0 part
+├─sda2                          8:2    0    1G  0 part  /boot
+└─sda3                          8:3    0   63G  0 part
+  └─ubuntu--vg-ubuntu--lv     253:0    0 31.5G  0 lvm   /
+sdb                             8:16   0  2.5G  0 disk
+├─sdb1                          8:17   0    2G  0 part
+│ └─md0                         9:0    0    2G  0 raid1
+└─sdb2                          8:18   0  511M  0 part
+  └─md1                         9:1    0 1018M  0 raid0
+    └─vol_group1-logical_vol1 253:1    0  100M  0 lvm   /tmp/logical_vol1
+sdc                             8:32   0  2.5G  0 disk
+├─sdc1                          8:33   0    2G  0 part
+│ └─md0                         9:0    0    2G  0 raid1
+└─sdc2                          8:34   0  511M  0 part
+  └─md1                         9:1    0 1018M  0 raid0
+    └─vol_group1-logical_vol1 253:1    0  100M  0 lvm   /tmp/logical_vol1
+
+15.
+vagrant@vagrant:~$ gzip -t /tmp/logical_vol1/test.gz
+vagrant@vagrant:~$ echo $?
+0
+
+16.
+vagrant@vagrant:~$ sudo pvmove -n /dev/vol_group1/logical_vol1 /dev/md1 /dev/md0
+  /dev/md1: Moved: 8.00%
+  /dev/md1: Moved: 100.00%
+
+17.
+vagrant@vagrant:~$ sudo mdadm /dev/md0 -f /dev/sdb1
+mdadm: set /dev/sdb1 faulty in /dev/md0
+
+18.
+в низу вывода 
+vagrant@vagrant:~$ dmesg | grep raid
+[    3.177567] raid6: avx2x4   gen() 30454 MB/s
+[    3.225574] raid6: avx2x4   xor()  7184 MB/s
+[    3.273564] raid6: avx2x2   gen() 26483 MB/s
+[    3.321584] raid6: avx2x2   xor() 18040 MB/s
+[    3.369572] raid6: avx2x1   gen() 21847 MB/s
+[    3.417582] raid6: avx2x1   xor() 15881 MB/s
+[    3.465586] raid6: sse2x4   gen()  5749 MB/s
+[    3.513586] raid6: sse2x4   xor()  3160 MB/s
+[    3.561564] raid6: sse2x2   gen() 10222 MB/s
+[    3.609598] raid6: sse2x2   xor()  7667 MB/s
+[    3.657558] raid6: sse2x1   gen()  9590 MB/s
+[    3.705580] raid6: sse2x1   xor()  5903 MB/s
+[    3.705929] raid6: using algorithm avx2x4 gen() 30454 MB/s
+[    3.706288] raid6: .... xor() 7184 MB/s, rmw enabled
+[    3.706614] raid6: using avx2x2 recovery algorithm
+[ 5111.082869] md/raid1:md0: not clean -- starting background reconstruction
+[ 5111.082870] md/raid1:md0: active with 2 out of 2 mirrors
+[55760.542940] md/raid1:md0: Disk failure on sdb1, disabling device.
+               md/raid1:md0: Operation continuing on 1 devices.
+
+19.
+vagrant@vagrant:~$ gzip -t /tmp/logical_vol1/test.gz
+vagrant@vagrant:~$ echo $?
+0
+
+20.
+PS D:\netology\vagrant\varconf> vagrant destroy
+    default: Are you sure you want to destroy the 'default' VM? [y/N] y
+==> default: Forcing shutdown of VM...
+==> default: Destroying VM and associated drives...
+PS D:\netology\vagrant\varconf>
