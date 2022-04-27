@@ -1,0 +1,204 @@
+#DZ 3_6
+
+1.
+
+vagrant@vagrant:~$ telnet stackoverflow.com 80
+Trying 151.101.129.69...
+Connected to stackoverflow.com.
+Escape character is '^]'.
+GET /questions HTTP/1.0
+HOST: stackoverflow.com
+
+HTTP/1.1 301 Moved Permanently
+cache-control: no-cache, no-store, must-revalidate
+location: https://stackoverflow.com/questions
+x-request-guid: 4882fefb-2aaa-48f4-9917-c76ac60ff367
+feature-policy: microphone 'none'; speaker 'none'
+content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
+Accept-Ranges: bytes
+Date: Wed, 27 Apr 2022 10:40:40 GMT
+Via: 1.1 varnish
+Connection: close
+X-Served-By: cache-hhn4046-HHN
+X-Cache: MISS
+X-Cache-Hits: 0
+X-Timer: S1651056040.095723,VS0,VE81
+Vary: Fastly-SSL
+X-DNS-Prefetch-Control: off
+Set-Cookie: prov=54c3ebd5-9d8b-3285-71f8-6a6024e6e857; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+
+Connection closed by foreign host.
+
+301 Moved Permanently - показывает, что запрашиваемый ресурс был окончательно перемещен в URL
+location: https://stackoverflow.com/questions  - показывает куда был перемещен
+
+
+2.
+
+URL-адрес запроса: http://stackoverflow.com/
+Метод запроса: GET
+Код состояния: 307 Internal Redirect
+Политика источника ссылки: strict-origin-when-cross-origin
+Cross-Origin-Resource-Policy: Cross-Origin
+Location: https://stackoverflow.com/
+Non-Authoritative-Reason: HSTS
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36 Edg/100.0.1185.50
+
+дольше всего  обрабатывался запрос "загрузка содержимого"
+https://skr.sh/sDfQvv2AUwG
+
+3.
+Мой IP: 212.22.хх.хх  данные с портала https://whois.ru/
+
+4.
+netname:        SmartGrupp
+origin:         AS204102
+
+5.
+
+vagrant@vagrant:~$ sudo traceroute -IAn 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  10.0.2.2 [*]  0.268 ms  0.239 ms  0.233 ms
+ 2  192.168.155.254 [*]  3.534 ms  3.894 ms  6.950 ms
+ 3  212.22.xx.xx [AS204102]  7.417 ms  7.411 ms  7.405 ms
+ 4  85.26.205.161 [AS31133]  8.450 ms  8.441 ms  8.430 ms
+ 5  10.222.152.113 [*]  20.306 ms  21.614 ms  21.605 ms
+ 6  83.169.204.166 [AS31133]  15.984 ms  15.047 ms  15.351 ms
+ 7  172.253.68.11 [AS15169]  19.839 ms  17.271 ms  17.588 ms
+ 8  108.170.250.66 [AS15169]  14.121 ms  14.465 ms  14.460 ms
+ 9  142.251.238.84 [AS15169]  31.976 ms  31.964 ms  32.977 ms
+10  142.251.238.66 [AS15169]  36.806 ms  37.210 ms  37.204 ms
+11  172.253.51.223 [AS15169]  30.682 ms  30.995 ms  30.615 ms
+12  * * *
+13  * * *
+14  * * *
+15  * * *
+16  * * *
+17  * * *
+18  * * *
+19  * * *
+20  * * *
+21  8.8.8.8 [AS15169]  31.261 ms  32.793 ms  33.145 ms
+
+6.
+                                                                                                 Packets               Pings
+ Host                                                                                          Loss%   Snt   Last   Avg  Best  Wrst StDev
+ 1. AS???    _gateway                                                                           0.0%   146    0.2   0.6   0.1  57.0   4.7
+ 2. AS???    192.168.155.254                                                                    0.0%   146    1.0   5.0   0.8  92.8  11.8
+ 3. AS204102 212.22.84.1                                                                        0.0%   146   12.2   5.4   1.5  71.8   9.1
+ 4. AS31133  85.26.205.161                                                                      0.7%   146    6.3  12.6   6.0 148.3  15.7
+ 5. AS???    10.222.152.113                                                                     0.7%   145   13.8  22.7  13.5 571.4  46.9
+ 6. AS31133  83.169.204.166                                                                     0.7%   145   14.1  20.7  13.6 502.5  41.2
+ 7. AS15169  172.253.68.11                                                                      0.7%   145   18.4  24.2  15.8 407.8  33.8
+ 8. AS15169  108.170.250.66                                                                     0.0%   145   15.7  21.3  13.4 293.8  25.3
+ 9. AS15169  142.251.238.84                                                                     2.1%   145   29.5  36.6  29.1 234.6  20.8
+10. AS15169  142.251.238.66                                                                     0.0%   145   29.7  38.3  28.1 189.2  19.0
+11. AS15169  172.253.51.223                                                                     0.7%   145   39.4  36.0  29.7 141.2  13.3
+12. (waiting for reply)
+13. (waiting for reply)
+14. (waiting for reply)
+15. (waiting for reply)
+16. (waiting for reply)
+17. (waiting for reply)
+18. (waiting for reply)
+19. (waiting for reply)
+20. (waiting for reply)
+21. AS15169  dns.google                                                                         0.7%   145   28.5  34.7  28.1 151.1  15.3
+
+
+10. AS15169  142.251.238.66   -- на данном участке наибольшая задержка
+
+ 7.
+
+vagrant@vagrant:~$ dig google.com NS
+
+; <<>> DiG 9.16.1-Ubuntu <<>> google.com NS
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 47462
+;; flags: qr rd ra; QUERY: 1, ANSWER: 4, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;google.com.                    IN      NS
+
+;; ANSWER SECTION:
+google.com.             7040    IN      NS      ns4.google.com.
+google.com.             7040    IN      NS      ns1.google.com.
+google.com.             7040    IN      NS      ns3.google.com.
+google.com.             7040    IN      NS      ns2.google.com.
+
+;; Query time: 4 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53)
+;; WHEN: Wed Apr 27 12:38:11 UTC 2022
+;; MSG SIZE  rcvd: 111
+
+vagrant@vagrant:~$ dig google.com A
+
+; <<>> DiG 9.16.1-Ubuntu <<>> google.com A
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 4946
+;; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;google.com.                    IN      A
+
+;; ANSWER SECTION:
+google.com.             260     IN      A       173.194.220.138
+google.com.             260     IN      A       173.194.220.139
+google.com.             260     IN      A       173.194.220.113
+google.com.             260     IN      A       173.194.220.102
+google.com.             260     IN      A       173.194.220.100
+google.com.             260     IN      A       173.194.220.101
+
+;; Query time: 20 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53)
+;; WHEN: Wed Apr 27 12:40:52 UTC 2022
+;; MSG SIZE  rcvd: 135
+
+
+8.
+vagrant@vagrant:~$ dig -x 173.194.220.101
+
+; <<>> DiG 9.16.1-Ubuntu <<>> -x 173.194.220.101
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 30285
+;; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 65494
+;; QUESTION SECTION:
+;101.220.194.173.in-addr.arpa.  IN      PTR
+
+;; ANSWER SECTION:
+101.220.194.173.in-addr.arpa. 68762 IN  PTR     lk-in-f101.1e100.net.
+
+;; Query time: 4 msec
+;; SERVER: 127.0.0.53#53(127.0.0.53)
+;; WHEN: Wed Apr 27 12:45:09 UTC 2022
+;; MSG SIZE  rcvd: 91
+
+vagrant@vagrant:~$ dig -x 173.194.220.100
+100.220.194.173.in-addr.arpa. 61743 IN  PTR     lk-in-f100.1e100.net.
+
+vagrant@vagrant:~$ dig -x 173.194.220.102
+;; ANSWER SECTION:
+102.220.194.173.in-addr.arpa. 64516 IN  PTR     lk-in-f102.1e100.net.
+
+vagrant@vagrant:~$ dig -x 173.194.220.113
+113.220.194.173.in-addr.arpa. 58327 IN  PTR     lk-in-f113.1e100.net.
+
+vagrant@vagrant:~$ dig -x 173.194.220.138
+;; ANSWER SECTION:
+138.220.194.173.in-addr.arpa. 77601 IN  PTR     lk-in-f138.1e100.net.
+
+vagrant@vagrant:~$ dig -x 173.194.220.139
+;; ANSWER SECTION:
+139.220.194.173.in-addr.arpa. 59981 IN  PTR     lk-in-f139.1e100.net.
