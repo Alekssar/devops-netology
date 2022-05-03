@@ -1,0 +1,136 @@
+#3-8
+
+1.
+vagrant@vagrant:~$ telnet route-views.routeviews.org
+Trying 128.223.51.103...
+Connected to route-views.routeviews.org.
+Escape character is '^]'.
+C
+**********************************************************************
+
+                    RouteViews BGP Route Viewer
+                    route-views.routeviews.org
+
+ route views data is archived on http://archive.routeviews.org
+
+ This hardware is part of a grant by the NSF.
+ Please contact help@routeviews.org if you have questions, or
+ if you wish to contribute your view.
+
+ This router has views of full routing tables from several ASes.
+ The list of peers is located at http://www.routeviews.org/peers
+ in route-views.oregon-ix.net.txt
+
+ NOTE: The hardware was upgraded in August 2014.  If you are seeing
+ the error message, "no default Kerberos realm", you may want to
+ in Mac OS X add "default unset autologin" to your ~/.telnetrc
+
+ To login, use the username "rviews".
+
+ **********************************************************************
+User Access Verification
+
+Username: rviews
+
+route-views>show ip route 212.22.67.66
+Routing entry for 212.22.67.0/24
+  Known via "bgp 6447", distance 20, metric 0
+  Tag 852, type external
+  Last update from 154.11.12.212 02:22:37 ago
+  Routing Descriptor Blocks:
+  * 154.11.12.212, from 154.11.12.212, 02:22:37 ago
+      Route metric is 0, traffic share count is 1
+      AS Hops 3
+      Route tag 852
+      MPLS label: none
+
+route-views>show bgp 212.22.67.66
+BGP routing table entry for 212.22.67.0/24, version 2247483949
+Paths: (23 available, best #17, table default)
+  Not advertised to any peer
+  Refresh Epoch 1
+  3303 31133 204102
+    217.192.89.50 from 217.192.89.50 (138.187.128.158)
+      Origin IGP, localpref 100, valid, external
+      Community: 3303:1004 3303:1006 3303:1030 3303:1031 3303:3056 65101:1085 65102:1000 65103:276 65104:150
+      path 7FE046AF62B8 RPKI State valid
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  7018 1299 31133 204102
+    12.0.1.63 from 12.0.1.63 (12.0.1.63)
+      Origin IGP, localpref 100, valid, external
+      Community: 7018:5000 7018:37232
+      path 7FE17808B860 RPKI State valid
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  3333 31133 204102
+    193.0.0.56 from 193.0.0.56 (193.0.0.56)
+      Origin IGP, localpref 100, valid, external
+      path 7FE023EF5420 RPKI State valid
+      rx pathid: 0, tx pathid: 0
+  Refresh Epoch 1
+  101 174 31133 204102
+    209.124.176.223 from 209.124.176.223 (209.124.176.223)
+      Origin IGP, localpref 100, valid, external
+      Community: 101:20100 101:20110 101:22100 174:21101 174:22005
+      Extended Community: RT:101:22100
+ --More--
+
+2.
+
+vagrant@vagrant:~$ ip link add dummy0 type dummy
+RTNETLINK answers: Operation not permitted
+vagrant@vagrant:~$ sudo ip link add dummy0 type dummy
+vagrant@vagrant:~$ sudo sudo ip addr add 10.0.10.1/24 dev dummy0
+vagrant@vagrant:~$ sudo ip link set dummy0 up
+vagrant@vagrant:~$ sudo ip route add to 10.10.0.0/16 via 10.0.10.1
+vagrant@vagrant:~$ sudo ip route add to 10.12.0.0/16 via 10.0.10.1
+vagrant@vagrant:~$ ip route
+default via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15
+10.0.2.2 dev eth0 proto dhcp scope link src 10.0.2.15 metric 100
+10.0.10.0/24 dev dummy0 proto kernel scope link src 10.0.10.1
+10.10.0.0/16 via 10.0.10.1 dev dummy0
+10.12.0.0/16 via 10.0.10.1 dev dummy0
+vagrant@vagrant:~$
+
+3.
+предварительно пришлось ставить net-tools
+vagrant@vagrant:~$ sudo apt install net-tools
+....
+ 
+
+vagrant@vagrant:~$ sudo netstat -ntlp
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp        0      0 127.0.0.53:53           0.0.0.0:*               LISTEN      657/systemd-resolve
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      1425/sshd: /usr/sbi
+tcp6       0      0 :::22                   :::*                    LISTEN      1425/sshd: /usr/sbi
+
+
+53 порт использует systemd
+22 порт используется под ssh соединение
+
+
+можно так же 
+
+vagrant@vagrant:~$ sudo ss -aptn
+State   Recv-Q  Send-Q   Local Address:Port   Peer Address:Port  Process
+LISTEN  0       4096     127.0.0.53%lo:53          0.0.0.0:*      users:(("systemd-resolve",pid=657,fd=13))
+LISTEN  0       128            0.0.0.0:22          0.0.0.0:*      users:(("sshd",pid=1425,fd=3))
+ESTAB   0       0            10.0.2.15:22         10.0.2.2:61514  users:(("sshd",pid=6534,fd=4),("sshd",pid=6466,fd=4))
+LISTEN  0       128               [::]:22             [::]:*      users:(("sshd",pid=1425,fd=4))
+
+
+4.
+
+vagrant@vagrant:~$ sudo ss -apun
+State    Recv-Q   Send-Q      Local Address:Port       Peer Address:Port   Process
+UNCONN   0        0           127.0.0.53%lo:53              0.0.0.0:*       users:(("systemd-resolve",pid=657,fd=12))
+UNCONN   0        0          10.0.2.15%eth0:68              0.0.0.0:*       users:(("systemd-network",pid=655,fd=19))
+
+5.
+https://skr.sh/sDle0tPrHdK?a
+
+
+задание под * приложу к след. дз. Нахожусь в дороге... делоть не очень удобно 
