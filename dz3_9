@@ -1,0 +1,243 @@
+1.
+https://skr.sh/sE5IIntArdo
+
+2.
+https://skr.sh/sE5gRs9hvzT?a
+https://skr.sh/sE5jLf0FlmW
+
+3.
+vagrant@vagrant:~$ sudo apt install apache2
+vagrant@vagrant:~$ sudo a2enmod ssl
+vagrant@vagrant:~$ sudo systemctl restart apache2
+vagrant@vagrant:~$ sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/test1.key -out /et
+c/ssl/certs/test1.cert -subj "/C=RU/ST=NN/L=Sarov/O=example/OU=COM/CN=www.example.com"
+vagrant@vagrant:~$ sudo nano /etc/apache2/sites-available/www.example.com.conf
+
+в файл закинул со слайда 18
+
+
+<VirtualHost *:443>
+ServerName example.com
+DocumentRoot /var/www/example.com
+SSLEngine on
+SSLCertificateFile /etc/ssl/certs/test1.cert
+SSLCertificateKeyFile /etc/ssl/private/test1.key
+</VirtualHost>
+
+
+vagrant@vagrant:~$ sudo mkdir /var/www/example.com
+vagrant@vagrant:~$ sudo nano /var/www/example.com/index.html
+vagrant@vagrant:~$ sudo a2ensite www.example.com
+Enabling site www.example.com.
+To activate the new configuration, you need to run:
+  systemctl reload apache2
+vagrant@vagrant:~$ sudo systemctl restart apache2
+vagrant@vagrant:~$ sudo a2ensite www.example.com
+Site www.example.com already enabled
+
+https://skr.sh/sE5Bc8uLS4K
+
+4.
+https://skr.sh/sE6hUvvSq3q
+
+5.
+
+
+vagrant@vagrant:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/vagrant/.ssh/id_rsa): /home/vagrant/.ssh/somekey_rsa       
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/vagrant/.ssh/somekey_rsa
+Your public key has been saved in /home/vagrant/.ssh/somekey_rsa.pub
+
+vagrant@vagrant:~$ ssh-copy-id -i .ssh/somekey_rsa -p 2200 vagrant@127.0.0.1
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: ".ssh/somekey_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh -p '2200' 'vagrant@127.0.0.1'"
+and check to make sure that only the key(s) you wanted were added.
+
+vagrant@vagrant:~$ ssh -p '2200' 'vagrant@127.0.0.1'
+vagrant@127.0.0.1's password: 
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-91-generic x86_64)
+
+....
+
+6.
+vagrant@vagrant:~$ mv .ssh/somekey_rsa .ssh/somenewkey_rsa
+vagrant@vagrant:~$ mv .ssh/somekey_rsa.pub .ssh/somenewkey_rsa.pub
+vagrant@vagrant:~$ nano .ssh/config
+
+Host somevagrant
+	HostName 127.0.0.1
+	IdentityFile ~/.ssh/somenewkey_rsa
+	User vagrant
+	Port 2200
+
+конектимся
+
+PS D:\netology\vagrant\varconf> ssh somevagrant
+Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-91-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Tue 24 May 2022 07:46:33 AM UTC
+
+  System load:  0.11               Processes:             130
+  Usage of /:   12.2% of 30.88GB   Users logged in:       1
+  Memory usage: 19%                IPv4 address for eth0: 10.0.2.15
+  Swap usage:   0%
+
+
+This system is built by the Bento project by Chef Software
+More information can be found at https://github.com/chef/bento
+Last login: Tue May 24 07:43:48 2022 from 10.0.2.2
+vagrant@vagrant:~$
+
+7.
+vagrant@vagrant:~$ sudo tcpdump -c 100 -w dump.pcap
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
+100 packets captured
+103 packets received by filter
+0 packets dropped by kernel
+vagrant@vagrant:~$ sudo tshark -r dump.pcap
+Running as user "root" and group "root". This could be dangerous.
+    1   0.000000    10.0.2.15 → 10.0.2.2     SSH 90 Server: Encrypted packet (len=36)
+    2   0.000233     10.0.2.2 → 10.0.2.15    TCP 60 56282 → 22 [ACK] Seq=1 Ack=37 Win=65535 Len=0
+    3 101.975384     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [SYN] Seq=0 Win=65535 Len=0 MSS=1460
+    4 101.975413    10.0.2.15 → 10.0.2.2     TCP 58 22 → 61656 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0 MSS=1460
+    5 101.975471     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=1 Ack=1 Win=65535 Len=0
+    6 101.975621     10.0.2.2 → 10.0.2.15    SSH 87 Client: Protocol (SSH-2.0-OpenSSH_for_Windows_8.1)
+    7 101.975627    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1 Ack=34 Win=64207 Len=0
+    8 101.984594    10.0.2.15 → 10.0.2.2     SSHv2 95 Server: Protocol (SSH-2.0-OpenSSH_8.2p1 Ubuntu-4ubuntu0.5)
+    9 101.984803     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=34 Ack=42 Win=65535 Len=0
+   10 101.985199     10.0.2.2 → 10.0.2.15    SSHv2 1446 Client: Key Exchange Init
+   11 101.985209    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=42 Ack=1426 Win=64032 Len=0
+   12 101.985737    10.0.2.15 → 10.0.2.2     SSHv2 1110 Server: Key Exchange Init
+   13 101.985851     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=1426 Ack=1098 Win=65535 Len=0
+   14 101.987332     10.0.2.2 → 10.0.2.15    SSHv2 102 Client: Diffie-Hellman Key Exchange Init
+   15 101.987347    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1098 Ack=1474 Win=64032 Len=0
+   16 101.996978    10.0.2.15 → 10.0.2.2     SSHv2 562 Server: Diffie-Hellman Key Exchange Reply, New Keys, Encrypted packet (len=228)
+   17 101.997161     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=1474 Ack=1606 Win=65535 Len=0
+   18 102.001246     10.0.2.2 → 10.0.2.15    SSHv2 70 Client: New Keys
+   19 102.001261    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1606 Ack=1490 Win=64032 Len=0
+   20 102.001330     10.0.2.2 → 10.0.2.15    SSHv2 98 Client: Encrypted packet (len=44)
+   21 102.001332    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1606 Ack=1534 Win=64032 Len=0
+   22 102.001421    10.0.2.15 → 10.0.2.2     SSHv2 98 Server: Encrypted packet (len=44)
+   23 102.001519     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=1534 Ack=1650 Win=65535 Len=0
+   24 102.001519     10.0.2.2 → 10.0.2.15    SSHv2 122 Client: Encrypted packet (len=68)
+   25 102.001526    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1650 Ack=1602 Win=64032 Len=0
+   26 102.008670    10.0.2.15 → 10.0.2.2     SSHv2 106 Server: Encrypted packet (len=52)
+   27 102.008857     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=1602 Ack=1702 Win=65535 Len=0
+   28 102.016152     10.0.2.2 → 10.0.2.15    SSHv2 706 Client: Encrypted packet (len=652)
+   29 102.016182    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1702 Ack=2254 Win=64032 Len=0
+   30 102.024199    10.0.2.15 → 10.0.2.2     SSHv2 82 Server: Encrypted packet (len=28)
+   31 102.024384     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2254 Ack=1730 Win=65535 Len=0
+   32 102.024916     10.0.2.2 → 10.0.2.15    SSHv2 166 Client: Encrypted packet (len=112)
+   33 102.070094    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=1730 Ack=2366 Win=64032 Len=0
+   34 102.471149    10.0.2.15 → 10.0.2.2     SSHv2 814 Server: Encrypted packet (len=760)
+   35 102.471345     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2366 Ack=2490 Win=65535 Len=0
+   36 102.471356    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   37 102.471445     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2366 Ack=2526 Win=65535 Len=0
+   38 102.471613     10.0.2.2 → 10.0.2.15    SSHv2 174 Client: Encrypted packet (len=120)
+   39 102.471619    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=2526 Ack=2486 Win=64032 Len=0
+   40 102.472773    10.0.2.15 → 10.0.2.2     SSHv2 162 Server: Encrypted packet (len=108)
+   41 102.472931    10.0.2.15 → 10.0.2.2     SSHv2 250 Server: Encrypted packet (len=196)
+   42 102.473026    10.0.2.15 → 10.0.2.2     SSHv2 370 Server: Encrypted packet (len=316)
+   43 102.473177     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2486 Ack=2634 Win=65535 Len=0
+   44 102.473177     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2486 Ack=2830 Win=65535 Len=0
+   45 102.473177     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2486 Ack=3146 Win=65535 Len=0
+   46 102.487702    10.0.2.15 → 10.0.2.2     SSHv2 122 Server: Encrypted packet (len=68)
+   47 102.487892     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2486 Ack=3214 Win=65535 Len=0
+   48 107.917355     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   49 107.917384    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=3214 Ack=2522 Win=64032 Len=0
+   50 107.917647    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   51 107.917762     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2522 Ack=3250 Win=65535 Len=0
+   52 107.971051     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   53 107.971068    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=3250 Ack=2558 Win=64032 Len=0
+   54 107.971322    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   55 107.971478     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2558 Ack=3286 Win=65535 Len=0
+   56 108.242765     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   57 108.242786    10.0.2.15 → 10.0.2.2     TCP 54 22 → 61656 [ACK] Seq=3286 Ack=2594 Win=64032 Len=0
+   58 108.243121    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   59 108.243311     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2594 Ack=3322 Win=65535 Len=0
+   60 108.402921     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   61 108.403171    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   62 108.403331     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2630 Ack=3358 Win=65535 Len=0
+   63 108.522802     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   64 108.523048    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   65 108.523180     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2666 Ack=3394 Win=65535 Len=0
+   66 108.763158     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   67 108.763407    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   68 108.763544     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2702 Ack=3430 Win=65535 Len=0
+   69 108.843119     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   70 108.843374    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   71 108.843547     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2738 Ack=3466 Win=65535 Len=0
+   72 109.330950     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   73 109.331290    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   74 109.331450     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2774 Ack=3502 Win=65535 Len=0
+   75 109.795041     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   76 109.795232    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   77 109.797830     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2810 Ack=3538 Win=65535 Len=0
+   78 109.866783     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   79 109.867079    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   80 109.867250     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2846 Ack=3574 Win=65535 Len=0
+   81 110.178706     10.0.2.2 → 10.0.2.15    SSHv2 90 Client: Encrypted packet (len=36)
+   82 110.179281    10.0.2.15 → 10.0.2.2     SSHv2 90 Server: Encrypted packet (len=36)
+   83 110.179430     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2882 Ack=3610 Win=65535 Len=0
+   84 110.181096    10.0.2.15 → 87.250.250.242 ICMP 98 Echo (ping) request  id=0x0002, seq=1/256, ttl=64
+   85 110.181226    10.0.2.15 → 10.0.2.2     SSHv2 130 Server: Encrypted packet (len=76)
+   86 110.181468     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2882 Ack=3686 Win=65535 Len=0
+   87 110.198707 87.250.250.242 → 10.0.2.15    ICMP 98 Echo (ping) reply    id=0x0002, seq=1/256, ttl=54 (request in 84)
+   88 110.199047    10.0.2.15 → 10.0.2.3     DNS 98 Standard query 0xf989 PTR 242.250.250.87.in-addr.arpa OPT
+   89 110.217936     10.0.2.3 → 10.0.2.15    DNS 117 Standard query response 0xf989 PTR 242.250.250.87.in-addr.arpa PTR ya.ru OPT
+   90 110.218435    10.0.2.15 → 10.0.2.2     SSHv2 130 Server: Encrypted packet (len=76)
+   91 110.218667     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2882 Ack=3762 Win=65535 Len=0
+   92 111.182168    10.0.2.15 → 87.250.250.242 ICMP 98 Echo (ping) request  id=0x0002, seq=2/512, ttl=64
+   93 111.201804 87.250.250.242 → 10.0.2.15    ICMP 98 Echo (ping) reply    id=0x0002, seq=2/512, ttl=54 (request in 92)
+   94 111.201988    10.0.2.15 → 10.0.2.2     SSHv2 98 Server: Encrypted packet (len=44)
+   95 111.202266     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2882 Ack=3806 Win=65535 Len=0
+   96 112.183141    10.0.2.15 → 87.250.250.242 ICMP 98 Echo (ping) request  id=0x0002, seq=3/768, ttl=64
+   97 112.199516 87.250.250.242 → 10.0.2.15    ICMP 98 Echo (ping) reply    id=0x0002, seq=3/768, ttl=54 (request in 96)
+   98 112.199776    10.0.2.15 → 10.0.2.2     SSHv2 98 Server: Encrypted packet (len=44)
+   99 112.200010     10.0.2.2 → 10.0.2.15    TCP 60 61656 → 22 [ACK] Seq=2882 Ack=3850 Win=65535 Len=0
+  100 113.184487    10.0.2.15 → 87.250.250.242 ICMP 98 Echo (ping) request  id=0x0002, seq=4/1024, ttl=64
+
+8.
+vagrant@vagrant:~$ nmap scanme.nmap.org
+Starting Nmap 7.80 ( https://nmap.org ) at 2022-05-25 12:31 UTC
+Nmap scan report for scanme.nmap.org (45.33.32.156)
+Host is up (0.20s latency).
+Other addresses for scanme.nmap.org (not scanned): 2600:3c01::f03c:91ff:fe18:bb2f
+Not shown: 996 filtered ports
+PORT      STATE SERVICE
+22/tcp    open  ssh
+80/tcp    open  http
+9929/tcp  open  nping-echo
+31337/tcp open  Elite
+
+Nmap done: 1 IP address (1 host up) scanned in 13.01 seconds
+vagrant@vagrant:~$
+
+подняты ssh,http,nping-echo
+
+9.
+vagrant@vagrant:~$ sudo ufw status verbose
+Status: active
+Logging: on (low)
+Default: deny (incoming), allow (outgoing), disabled (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp (OpenSSH)           ALLOW IN    Anywhere
+80,443/tcp (Apache Full)   ALLOW IN    Anywhere
+80/tcp (Apache (v6))       ALLOW IN    Anywhere (v6)
+22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)
+80,443/tcp (Apache Full (v6)) ALLOW IN    Anywhere (v6)
